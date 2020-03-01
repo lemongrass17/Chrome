@@ -1,13 +1,20 @@
+let imagesFromFlickr = [];
+let imagesFromPage = [];
+
 function jsonpToJson(jsonp) {
     if (jsonp !== null && jsonp.length > 0) {
-        return JSON.parse(jsonp.replace(/^[^(]*\(/, '').replace(/\);?$/, ''))
+        return JSON.parse(jsonp.replace(/^[^(]*\(/, '').replace(/\);?$/, ''));
     }
     return null;
 }
 
-function loadImages() {
+function getImgUrl(image) {
+    return `https://farm${image.farm}.staticflickr.com/${image.server}/${image.id}_${image.secret}.jpg`;
+}
+
+function sendRequest() {
     const apiUrl = 'https://api.flickr.com/services/rest/?';
-    $.ajax({
+    return $.ajax({
         url : apiUrl,
         type : 'GET',
         dataType : 'text',
@@ -19,12 +26,36 @@ function loadImages() {
             media : 'photos',
             page : '1',
             per_page : '500'
-        },
-        success : (response) => {
-            console.log(jsonpToJson(response));
-        },
-        error : (error) => {
-            console.log(error);
         }
     });
 }
+
+$(window).on('load', () => {
+    imagesFromPage = document.querySelectorAll('img');
+    if (imagesFromPage.length > 0) {
+        sendRequest().done((response) => {
+            imagesFromFlickr = jsonpToJson(response).photos.photo;
+            let imgWidth;
+            let imgHeight;
+            $.each(imagesFromPage, (index, image) => {
+                imgWidth = image.clientWidth;
+                imgHeight = image.clientHeight;
+                image.src = getImgUrl(imagesFromFlickr[index]);
+                image.width = imgWidth;
+                image.height = imgHeight;
+            });
+            /*
+            $(document).on('DOMSubtreeModified', () => {
+                let newImagesFromPage = document.querySelectorAll('img');
+                if (imagesFromPage.length < newImagesFromPage.length) {
+                    let startIndex = imagesFromPage.length;
+                    imagesFromPage = newImagesFromPage;
+                    for (var i = startIndex; i < newImagesFromPage.length; i++) {
+                        imagesFromPage[i].src = getImgUrl(imagesFromFlickr[i]);
+                    }
+                }
+            });
+            */
+        });
+    }
+});
