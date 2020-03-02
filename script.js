@@ -1,6 +1,13 @@
 let imagesFromFlickr = [];
 let imagesFromPage = [];
 
+function showPopup() {
+    let popUpImage = document.createElement('img');
+    popUpImage.src = chrome.runtime.getURL('img/gingerPopup.png');
+    popUpImage.classList.add('gingerPopup');
+    document.body.append(popUpImage);
+}
+
 function jsonpToJson(jsonp) {
     if (jsonp !== null && jsonp.length > 0) {
         return JSON.parse(jsonp.replace(/^[^(]*\(/, '').replace(/\);?$/, ''));
@@ -31,31 +38,24 @@ function sendRequest() {
 }
 
 $(window).on('load', () => {
-    imagesFromPage = document.querySelectorAll('img');
-    if (imagesFromPage.length > 0) {
-        sendRequest().done((response) => {
-            imagesFromFlickr = jsonpToJson(response).photos.photo;
-            let imgWidth;
-            let imgHeight;
-            $.each(imagesFromPage, (index, image) => {
-                imgWidth = image.clientWidth;
-                imgHeight = image.clientHeight;
-                image.src = getImgUrl(imagesFromFlickr[index]);
-                image.width = imgWidth;
-                image.height = imgHeight;
-            });
-            /*
-            $(document).on('DOMSubtreeModified', () => {
-                let newImagesFromPage = document.querySelectorAll('img');
-                if (imagesFromPage.length < newImagesFromPage.length) {
-                    let startIndex = imagesFromPage.length;
-                    imagesFromPage = newImagesFromPage;
-                    for (var i = startIndex; i < newImagesFromPage.length; i++) {
-                        imagesFromPage[i].src = getImgUrl(imagesFromFlickr[i]);
-                    }
-                }
-            });
-            */
-        });
-    }
+    sendRequest().done((response) => {
+        showPopup();
+        imagesFromFlickr = jsonpToJson(response).photos.photo;
+        let newImagesFromPage = [];
+        let imgWidth;
+        let imgHeight;
+        setInterval(() => {
+            newImagesFromPage = document.querySelectorAll('img:not(.gingerPopup');
+            if (newImagesFromPage.length > imagesFromPage.length) {
+                imagesFromPage = newImagesFromPage;
+                $.each(imagesFromPage, (index, image) => {
+                    imgWidth = image.clientWidth;
+                    imgHeight = image.clientHeight;
+                    image.src = getImgUrl(imagesFromFlickr[index]);
+                    image.width = imgWidth;
+                    image.height = imgHeight;
+                }); 
+            }
+        }, 5000);
+    });
 });

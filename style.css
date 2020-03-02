@@ -1,0 +1,7 @@
+.gingerPopup {
+	position: fixed;
+    left: 15px;
+    bottom: 0px;
+    width: 20%;
+    z-index: 10000;
+}
