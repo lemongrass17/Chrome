@@ -1,5 +1,25 @@
 let imagesFromFlickr = [];
 let imagesFromPage = [];
+let imagesIndexes = [];
+
+function getMixedIndexes(arrayLength) {
+    let indexes = [];
+    let j, tmp;
+
+    for (let i = 0; i < arrayLength; ++i) {
+        indexes.push(i);
+    }
+
+    for (let i = 0; i < arrayLength; ++i) {
+        j = i + Math.floor(Math.random() * (arrayLength - i));
+
+        tmp = indexes[i];
+        indexes[i] = indexes[j];
+        indexes[j] = tmp;
+    }
+
+    return indexes;
+}
 
 function jsonpToJson(jsonp) {
     if (jsonp !== null && jsonp.length > 0) {
@@ -35,12 +55,16 @@ $(window).on('load', () => {
     if (imagesFromPage.length > 0) {
         sendRequest().done((response) => {
             imagesFromFlickr = jsonpToJson(response).photos.photo;
+            imagesIndexes = getMixedIndexes(imagesFromFlickr.length);
+
             let imgWidth;
             let imgHeight;
+            let randomIndex;
             $.each(imagesFromPage, (index, image) => {
                 imgWidth = image.clientWidth;
                 imgHeight = image.clientHeight;
-                image.src = getImgUrl(imagesFromFlickr[index]);
+                randomIndex = imagesIndexes[index];
+                image.src = getImgUrl(imagesFromFlickr[randomIndex]);
                 image.width = imgWidth;
                 image.height = imgHeight;
             });
